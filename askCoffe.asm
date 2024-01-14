@@ -1,86 +1,90 @@
-global	_start
-
+; Compile with:
+; nasm  -f elf64 asm.asm && ld asm.o -o askCoffe
+;
 section	.data
-	msg1	db "How about another coffe?", 0
-	msg1Len	equ $-msg1
+	msg1		db 0xa, "How about another coffe?", 10, 0
+	.len	equ $-msg1
 
-	msg2	db "That's a good ammount of coffe!", 0
-	msg2Len	equ $-msg2
+	msg2		db 0xa, "That's a good ammount of coffe!", 10, 0
+	.len	equ $-msg2
 	
-	cls	db `\033[2J\033[H`,0Ah
-	clsLen	equ $-cls
+        msg3            db 0xa, "A perfect way to start!", 10, 0
+        .len    equ $-msg3
 
-	q1	db "How many cups of coffee did you have?", 0, 10
-	q1Len	equ $-q1
+	cls		db `\033[2J\033[H`,0Ah, 0
+	.len		equ $-cls
+
+	q1		db 0xa, "How many cups of coffee did you have?", 0 
+	.len		equ $-q1
 
 section .bss
-	answer	resb 2
+	answer		resb 2
 	
-
 section	.text
+global	_start
 
 _start:
+	nop
+	call	_cls
+_continue:
 	call	_q1
 	call	_read
-	mov	rax, [answer]
-	sub	rax,'0'
-	mov	r8,2
-	cmp	rax,r8
-	jl	_goMsg1
-	jg	_goMsg2
-_continue:
+	cmp	al, 2
+	call	_cls
+	jl	_msg1
+	je	_msg3
+	jg	_msg2
 	jmp	_start
 
-_goMsg1:
-	call	_msg1
-	jmp	_continue
-
-_goMsg2:
-	call	_msg2
-	jmp	_end
 _q1:
 	mov	rax, 1
 	mov	rdi, 1
-	mov	rsi, q1
-	mov	rdx, q1Len
+	lea	rsi, q1
+	mov	rdx, q1.len
 	syscall
 	ret
-
 _read:
-	mov	rax, 0
+	mov	al, 0
 	mov	rdi, 0
+	xor	rsi,rsi
 	mov	rsi, answer
-	mov	rdx, 2
+	mov	dl, 2
 	syscall
+	mov	al, byte [answer]
+	sub	al, '0'
 	ret
 
 _cls:
-	mov	eax, 1
-	xor	rsi,rsi
-	xor	rdx,rdx
+	mov	rax, 1
 	lea	rsi, [cls]
-	mov	edx, clsLen
+	mov	rdx, cls.len
 	mov	rdi, 1
 	syscall
 	ret
 _msg1:
 	mov	rax, 1
 	mov	rdi, 1
-	xor	rsi,rsi
-	mov	rsi, msg1
-	xor	rdx,rdx
-	mov	rdx, msg1Len
+	lea	rsi, [msg1]
+	mov	rdx, msg1.len
 	syscall
-	ret
+	jmp	_continue
 _msg2:
 	mov	rax, 1
 	mov	rdi, 1
-	xor	rsi,rsi
-	mov	rsi, msg2
-	xor	rdx,rdx
-	mov	rdx, msg2Len
+	lea	rsi, [msg2]
+	mov	rdx, msg2.len
 	syscall
-	ret
+	jmp	_continue
+	
+_msg3:
+        mov     rax, 1
+        mov     rdi, 1
+        lea     rsi, [msg3]
+        mov     rdx, msg3.len
+        syscall
+        jmp     _continue
+
+
 _end:
 	mov     rax, 60
 	mov     rdi, 0
