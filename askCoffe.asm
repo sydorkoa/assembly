@@ -1,5 +1,5 @@
 ; Compile with:
-; nasm  -f elf64 asm.asm && ld asm.o -o askCoffe
+; nasm  -f elf64 askCoffe.asm && ld askCoffe.o -o askCoffe
 ;
 section	.data
 	msg1		db 0xa, "How about another coffe?", 10, 0
